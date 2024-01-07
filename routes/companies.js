@@ -15,22 +15,23 @@ router.get("/", async (req, res, next) => {
 
 router.get("/:code", async (req, res, next) => {
     try {
+        let code = req.params.code;
         const companyResult = await db.query(
                 `SELECT * 
                 FROM companies 
                 WHERE code = $1`,
-                [req.params.code]
+                [code]
         );
 
         const invoiceResult = await db.query(
                 `SELECT *
                 FROM invoices
                 WHERE comp_code = $1`,
-                [req.params.code]
+                [code]
         );
 
         if (companyResult.rows.length === 0) {
-            throw new Error(`Can't find company with code of ${code}`, 404)
+            throw new ExpressError(`Can't find company with code of ${code}`, 404)
         }
 
         const company = companyResult.rows[0]
@@ -74,8 +75,9 @@ router.post("/", async (req, res, next) => {
 
 router.put("/:code", async (req, res, next) => {
     try {
-        const {code} = req.params;
+        const code = req.params.code;
         const {name, description} = req.body;
+        
         const result = await db.query(
             `UPDATE companies
             SET name=$1, description=$2
@@ -85,7 +87,7 @@ router.put("/:code", async (req, res, next) => {
         );
             
         if (result.rows.length === 0) {
-            throw new Error(`Could not find company with the code ${code}`, 404)
+            throw new ExpressError(`Could not find company with the code ${code}`, 404)
         } else {
             return res.json({company : result.rows[0]});
         }
